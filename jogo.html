@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Peregrino Prudentino</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<style>
+    #peregrino {
+        position: absolute;
+        width: 50px;
+        height: 60px;
+        transition: 0.1s;
+        z-index: 1010;
+    }
+
+    body {
+        width: 800px;
+        height: 800px;
+        background-color: #9acd32;
+    }
+
+    #map {
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+
+<body>
+    <div id="map"><button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+            id="btmodal">
+        </button></div>
+    <img id="peregrino" src="src/Frente0.png"></img>
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closer">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script>
+        var modal = document.getElementById("btmodal")
+        var closer = document.getElementById("closer")
+        var map = L.map('map').setView([-22.120482506031486, -51.40517021283939], 15);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            minZoom: 1,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        var LeafIcon = L.Icon.extend({
+            options: {
+                iconSize: [70, 70],
+                shadowSize: [50, 64],
+                iconAnchor: [22, 0],
+                shadowAnchor: [4, 62],
+                popupAnchor: [-3, -76]
+            }
+        })
+        const icons = {
+            home: new LeafIcon({ iconUrl: 'src/borboleta.png' }),
+            flag: new LeafIcon({ iconUrl: 'src/Frente0.png' }),
+            pointer: new LeafIcon({ iconUrl: 'src/tras0.png' })
+        }
+
+        const pontost = {
+            "PrudenShopping": [-22.115886948639254, -51.4068871708291],
+            "Matarazzo": [-22.120719449606206, -51.379033349952735],
+            "IBC": [-22.114834668420503, -51.37876474383942],
+            "Catedral de São Sebastião": [-22.122520556117912, -51.388652094128005],
+            "Balneário da amizade": [-22.10542680142676, -51.44125532237158]
+            // Adicione outras coordenadas aqui...
+        };
+
+        // Adicionar marcadores (pinos) para as capitais
+
+        const markers = [];
+        for (const ponto in pontost) {
+            const marker = L.marker(pontost[ponto]);
+            marker.bindPopup(ponto);
+            marker.addTo(map);
+            markers.push({ marker, collisionAlertShown: false }); // Adicione um objeto para rastrear o estado do alerta
+        }
+
+
+
+        const peregrino = document.getElementById('peregrino');
+        const getWidhtVw = window.innerWidth;
+        const getHeightVh = window.innerHeight;
+        peregrino.style.left = (window.innerWidth / 2) + 'px';
+        peregrino.style.top = (window.innerHeight / 2) + 'px';
+        let xPosition = (window.innerWidth / 2);
+        let yPosition = (window.innerHeight / 2);
+        let imageFixa = '';
+        let ImageIndex = 0;
+        document.addEventListener('keydown', (event) => {
+            const key = event.key
+            if (key === 'w') {
+                yPosition -= 10;
+                ImageIndex = (ImageIndex + 1) % 3;
+                imageFixa = 'src/tras';
+            } else if (key === 's') {
+                yPosition += 10;
+                ImageIndex = (ImageIndex + 1) % 3;
+                imageFixa = 'src/Frente';
+            } else if (key === 'a') {
+                xPosition -= 10;
+                ImageIndex = (ImageIndex + 1) % 3;
+                imageFixa = 'src/Esquerda';
+            } else if (key === 'd') {
+                xPosition += 10;
+                ImageIndex = (ImageIndex + 1) % 3;
+                imageFixa = 'src/Direita';
+            }
+            const imageSrc = `${imageFixa}${ImageIndex}.png`;
+            peregrino.src = imageSrc;
+            peregrino.style.left = xPosition + 'px';
+            peregrino.style.top = yPosition + 'px';
+
+            const characterRect = peregrino.getBoundingClientRect();
+            markers.forEach(item => {
+                const { marker, collisionAlertShown } = item;
+                if (!collisionAlertShown) {
+                    const markerLatLng = marker.getLatLng();
+                    const markerPos = map.latLngToContainerPoint(markerLatLng);
+
+                    if (
+                        xPosition + characterRect.width > markerPos.x &&
+                        xPosition < markerPos.x + 0.7 && // Tamanho aproximado do ícone do marcador
+                        yPosition + characterRect.height > markerPos.y &&
+                        yPosition < markerPos.y + 0.7// Tamanho aproximado do ícone do marcador
+                    ) {
+                        console.log(markerPos)
+                        modal.click()
+                        item.collisionAlertShown = true; // Defina a flag de alerta como true para este marcador
+
+                    }
+                    else {
+                        closer.click()
+                        console.log(markerPos)
+                        item.collisionAlertShown = false;
+                    }
+
+                }
+            });
+        });
+
+
+    </script>
+</body>
+
+</html>
